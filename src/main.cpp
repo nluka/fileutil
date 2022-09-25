@@ -67,7 +67,7 @@ int main(int const argc, char const *const *const argv) {
       return action::sizerank(options);
     } else {
       action::Result res(ExitCode::INVALID_ACTION);
-      res.m_output  << "fatal: `" << action << "` is not a valid action";
+      res.m_output << "fatal: `" << action << "` is not a valid action";
       return res;
     }
   }();
