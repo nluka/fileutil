@@ -113,16 +113,16 @@ int main(void) {
       testCase(
         "defaults",
         util::lengthof(argv), argv,
-        "1. (13.00 B) 13byte\n"
-        "2. (12.00 B) _12byte\n"
-        "3. (11.00 B) __11byte\n"
-        "4. (10.00 B) _10byte\n"
-        "5. (9.00 B) __9byte\n"
-        "6. (8.00 B) _8byte\n"
-        "7. (7.00 B) _7byte\n"
-        "8. (6.00 B) _6byte\n"
-        "9. (5.00 B) __5byte\n"
-        "10. (4.00 B) __4byte\n"
+        "1. (13 B) 13byte\n"
+        "2. (12 B) _12byte\n"
+        "3. (11 B) __11byte\n"
+        "4. (10 B) _10byte\n"
+        "5. (9 B) __9byte\n"
+        "6. (8 B) _8byte\n"
+        "7. (7 B) _7byte\n"
+        "8. (6 B) _6byte\n"
+        "9. (5 B) __5byte\n"
+        "10. (4 B) __4byte\n"
       );
     }
     {
@@ -130,20 +130,52 @@ int main(void) {
         "program_name_placeholder",
         "sizerank",
         "--dir", "sizerank",
-        "--top", "3",
-        "--minsize", "5",
+        "--recursive",
+        "--top", "4",
+        "--minsize", "3",
         "--maxsize", "7",
         "--pattern", "_[0-9]+byte",
       };
       testCase(
-        "top 3, [5, 7] bytes, start with single underscore",
+        "top 5, [3, 7] bytes, starts with single underscore",
         util::lengthof(argv), argv,
-        "1. (7.00 B) _7byte\n"
-        "2. (6.00 B) _6byte\n"
+        "1. (7 B) _7byte\n"
+        "2. (6 B) _6byte\n"
+        "3. (4 B) subdir\\_4byte\n"
+        "4. (3 B) _3byte\n"
       );
     }
 
   } // sizerank
+
+  {
+    SETUP_SUITE_USING(util::format_file_size)
+
+    auto const testCase = [&s](
+      uintmax_t const size,
+      char const *const expected
+    ) {
+      string const result = format_file_size(size);
+      stringstream name{};
+      name << size << " == " << expected << " (got " << result << ")";
+      s.assert(name.str().c_str(), result == expected);
+    };
+
+    testCase(0, "0 B");
+
+    testCase(1023, "1023 B");
+    testCase(1024, "1.00 KB");
+    testCase(2048, "2.00 KB");
+
+    testCase(1'048'575, "1024.00 KB");
+    testCase(1'048'576, "1.00 MB");
+
+    testCase(1'073'741'823, "1024.00 MB");
+    testCase(1'073'741'824, "1.00 GB");
+
+    testCase(1'099'511'627'775, "1024.00 GB");
+    testCase(1'099'511'627'776, "1.00 TB");
+  }
 
   test::evaluate_suites();
 

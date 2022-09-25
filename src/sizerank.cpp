@@ -242,5 +242,23 @@ action::Result action::sizerank(boost::program_options::variables_map const &opt
     }
   }
 
+  if (options.count("out")) {
+    string const pathname = options.at("out").as<string>();
+    fstream file = util::open_file(pathname.c_str(), ios::out);
+    file
+      << "top " << top << " largest files\n"
+      << "in range [" << minSize << ", " << maxSize << "] bytes\n"
+      << "in directory \"" << rootDir << '"';
+    if (options.count("recursive")) {
+      file << " and all subdirectories";
+    }
+    file
+      << "\nmatching regex /^" <<
+        (options.count("pattern") ?
+          options.at("pattern").as<string>()
+          : ".*") << "$/\n"
+      << "----------\n" << res.m_output.str();
+  }
+
   return res;
 }

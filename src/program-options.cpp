@@ -25,6 +25,7 @@ bpo::options_description const &prgopt::options_descrip() {
       ("maxsize", value<uintmax_t>(), emptyDescrip)
       ("pattern", value<string>(), emptyDescrip)
       ("followdirsymlinks", emptyDescrip)
+      // ("out", value<string>(), emptyDescrip)
     ;
     initialized = true;
   }

@@ -45,6 +45,7 @@ std::size_t lengthof(ElemTy (&)[Length]) {
   return Length;
 }
 
+std::string format_file_size(std::uintmax_t size);
 void format_file_size(std::uintmax_t size, char *out, std::size_t outSize);
 
 } // namespace util

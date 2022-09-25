@@ -81,6 +81,12 @@ string util::extract_txt_file_contents(char const *const pathname) {
   return content;
 }
 
+string util::format_file_size(uintmax_t const size) {
+  char out[21];
+  format_file_size(size, out, sizeof(out));
+  return string(out);
+}
+
 void util::format_file_size(
   uintmax_t const size_,
   char *const out,
@@ -94,7 +100,17 @@ void util::format_file_size(
 
   while (size >= 1024 && unitIdx < largestUnitIdx) {
     size /= 1024;
+    ++unitIdx;
   }
 
-  snprintf(out, outSize, "%.2f %s", size, units[unitIdx]);
+  char const *const fmt =
+    unitIdx == 0
+    // no digits after decimal point for bytes
+    // because showing a fraction of a byte doesn't make sense
+    ? "%.0lf %s"
+    // 2 digits after decimal points for denominations
+    // greater than bytes
+    : "%.2lf %s";
+
+  snprintf(out, outSize, fmt, size, units[unitIdx]);
 }
