@@ -12,7 +12,7 @@
 namespace test {
 
 // Configuration:
-#define TEST_THREADSAFE_REGISTRATION_AND_EVALUATION 1
+#define TEST_THREADSAFE_REGISTRATION_AND_EVALUATION 0
 #define TEST_THREADSAFE_ASSERTS 0
 
 // Convenience macro which creates and registers a test suite.

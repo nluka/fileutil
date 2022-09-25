@@ -1,8 +1,8 @@
 # fileutil
 
 ## functions
-- [ ] [repeat](#repeat) a file
-- [ ] rank files by size in a directory
+- [ ] [repeat](#repeat): repeat the contents of a file
+- [ ] [sizerank](#sizerank): rank file by size
 - [ ] generate a binary file with a pattern
 - [ ] globbing
 

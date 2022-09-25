@@ -22,6 +22,8 @@ struct Result {
 
 Result repeat(boost::program_options::variables_map const &options);
 
+Result sizerank(boost::program_options::variables_map const &options);
+
 } // namespace action
 
 #endif // ACTION_HPP

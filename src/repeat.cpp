@@ -7,53 +7,62 @@
 
 #include "action.hpp"
 
+using namespace std;
+
 action::Result action::repeat(boost::program_options::variables_map const &options) {
   #define CHECK_OPT_EXISTS(opt) \
   if (!options.count(opt)) { \
-    Result res(ExitCode::MISSING_REQUIRED_OPTION); \
+    action::Result res(ExitCode::MISSING_REQUIRED_OPTION); \
     res.m_output << "fatal: missing required option `" opt "`"; \
     return res; \
   }
 
   CHECK_OPT_EXISTS("in")
-  auto const in = options.at("in").as<std::string>();
+  auto const in = options.at("in").as<string>();
 
-  CHECK_OPT_EXISTS("times")
-  auto const times = options.at("times").as<std::size_t>();
+  CHECK_OPT_EXISTS("count")
+  auto const count = options.at("count").as<size_t>();
+  if (count == 0) {
+    action::Result res(ExitCode::BAD_OPTION_VALUE);
+    res.m_output << "fatal: option `count` must be > 0";
+    return res;
+  }
 
   CHECK_OPT_EXISTS("out")
-  auto const out = options.at("out").as<std::string>();
+  auto const out = options.at("out").as<string>();
 
-  std::ifstream inFile(in, std::ios::binary);
+  #undef CHECK_OP_EXISTS
+
+  ifstream inFile(in, ios::binary);
   if (!inFile.is_open()) {
     Result res(ExitCode::FILE_OPEN_FAILED);
     res.m_output << "fatal: failed to open file `" << in << "`";
     return res;
   }
 
-  std::ofstream outFile(out, std::ios::binary);
+  ofstream outFile(out, ios::binary);
   if (!inFile.is_open()) {
     Result res(ExitCode::FILE_OPEN_FAILED);
     res.m_output << "fatal: failed to open file `" << out << "`";
     return res;
   }
 
-  auto const inFileSizeInBytes = static_cast<std::size_t>(
-    std::filesystem::file_size(in)
+  auto const inFileSizeInBytes = static_cast<size_t>(
+    filesystem::file_size(in)
   );
-  std::size_t bufferSize = std::min(
-    static_cast<std::size_t>(2 * 1024 * 1024),
+  size_t bufferSize = min(
+    static_cast<size_t>(2 * 1024 * 1024),
     inFileSizeInBytes
   );
-  std::vector<std::uint8_t> buffer(bufferSize);
+  vector<uint8_t> buffer(bufferSize);
 
-  for (std::size_t i = 0; i <= times; ++i) {
-    std::size_t numBytesReadSoFar = 0;
-    inFile.seekg(std::ios::beg, 0);
+  for (size_t i = 1; i <= count; ++i) {
+    size_t numBytesReadSoFar = 0;
+    inFile.seekg(ios::beg, 0);
 
     while (numBytesReadSoFar < inFileSizeInBytes) {
-      std::size_t const numBytesRemaining = inFileSizeInBytes - numBytesReadSoFar;
-      std::size_t const numBytesToProcessThisIter =
+      size_t const numBytesRemaining = inFileSizeInBytes - numBytesReadSoFar;
+      size_t const numBytesToProcessThisIter =
         numBytesRemaining >= bufferSize
           ? bufferSize
           : numBytesRemaining

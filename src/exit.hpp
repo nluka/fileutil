@@ -9,7 +9,9 @@ enum class ExitCode : int {
   INVALID_ACTION,
   MISSING_REQUIRED_OPTION,
   BAD_OPTION_VALUE,
+  FILE_NOT_FOUND,
   FILE_OPEN_FAILED,
+  BAD_FILE,
 };
 
 #define EXIT(code) \
