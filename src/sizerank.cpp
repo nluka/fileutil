@@ -1,4 +1,3 @@
-// #define _CRT_SECURE_NO_WARNINGS
 #include <filesystem>
 #include <functional>
 #include <regex>
@@ -13,8 +12,6 @@
 using namespace std;
 namespace fs = filesystem;
 
-
-
 bool smallest(uintmax_t const currentFile, uintmax_t const lowestRankedFile) {
   return currentFile < lowestRankedFile;
 }
@@ -23,46 +20,6 @@ bool largest(uintmax_t const currentFile, uintmax_t const lowestRankedFile) {
 }
 
 action::Result action::sizerank(boost::program_options::variables_map const &options) {
-  // enum class Order {
-  //   DESCENDING,
-  //   ASCENDING,
-  //   INVALID,
-  // };
-
-  // Order const order = [&options]() {
-  //   if (!options.count("order"))
-  //     return Order::DESCENDING;
-
-  //   string const raw = options.at("order").as<string>();
-
-  //   if (raw == "desc" || raw == "descending")
-  //     return Order::DESCENDING;
-  //   else if (raw == "asc" || raw == "ascending")
-  //     return Order::ASCENDING;
-  //   else
-  //     return Order::INVALID;
-  // }();
-
-  // if (order == Order::INVALID) {
-  //   action::Result res(ExitCode::BAD_OPTION_VALUE);
-  //   res.m_output << "fatal: option `order` value must be asc|ascending|desc|descending";
-  //   return res;
-  // }
-
-  // function<bool(uintmax_t, uintmax_t)> comparator = largest;
-  // if (options.count("type")) {
-  //   string const raw = options.at("type").as<string>();
-  //   if (raw == "largest" || raw == "lg")
-  //     comparator = largest;
-  //   else if (raw == "smallest" || raw == "sm")
-  //     comparator = smallest;
-  //   else {
-  //     action::Result res(ExitCode::BAD_OPTION_VALUE);
-  //     res.m_output << "fatal: option `type` must be largest|lg|smallest|sm";
-  //     return res;
-  //   }
-  // }
-
   uintmax_t const top = [&options]() {
     if (options.count("top"))
       return options.at("top").as<uintmax_t>();
@@ -89,7 +46,6 @@ action::Result action::sizerank(boost::program_options::variables_map const &opt
     res.m_output << "fatal: option `minsize` must be <= `maxsize`";
     return res;
   }
-
 
   std::regex pattern;
   if (options.count("pattern")) {

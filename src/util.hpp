@@ -41,7 +41,6 @@ bool vectors_same(
 template <typename ElemTy, std::size_t Length>
 constexpr
 std::size_t lengthof(ElemTy (&)[Length]) {
-  // implementation from: https://stackoverflow.com/a/2404697/16471560
   return Length;
 }
 

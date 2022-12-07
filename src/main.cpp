@@ -29,8 +29,6 @@ void print_help_msg() {
     "  --dir               | directory to search [default: cwd]\n"
     "  --recursive         | enables recusive iteration through all subdirectories [default: off]\n"
     "  --top               | how many top entries to rank [default: 10]\n"
-    // "  --type      | smallest|sm|largest|lg [default: largest]\n"
-    // "  --order     | ascending|asc|descending|desc [default: descending]\n"
     "  --minsize           | smallest file size (in bytes) to consider [default: 0]\n"
     "  --maxsize           | largest file size (in bytes) to consider [default: infinity]\n"
     "  --pattern           | regular expression to test files against [default: .*]\n"

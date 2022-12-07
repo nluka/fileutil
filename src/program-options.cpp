@@ -19,13 +19,10 @@ bpo::options_description const &prgopt::options_descrip() {
       ("dir", value<string>(), emptyDescrip)
       ("recursive", emptyDescrip)
       ("top", value<uintmax_t>(), emptyDescrip)
-      // ("type", value<string>(), emptyDescrip)
-      // ("order", value<string>(), emptyDescrip)
       ("minsize", value<uintmax_t>(), emptyDescrip)
       ("maxsize", value<uintmax_t>(), emptyDescrip)
       ("pattern", value<string>(), emptyDescrip)
       ("followdirsymlinks", emptyDescrip)
-      // ("out", value<string>(), emptyDescrip)
     ;
     initialized = true;
   }

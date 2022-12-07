@@ -1,14 +1,11 @@
 #include <fstream>
 
-// #include <boost/program_options.hpp>
-
 #include "action.hpp"
 #include "program-options.hpp"
 #include "test.hpp"
 #include "util.hpp"
 
-// conflicts with `test` module
-#undef assert
+#undef assert // due to conflict with `test` module
 
 int main(void) {
   test::use_stdout(true);
