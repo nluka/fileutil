@@ -1,5 +1,6 @@
-.vs
-.vscode
-bin
-interm
+.vs/
+.vscode/
+bin/
+interm/
 *.binout
+testing/out.txt

@@ -1,29 +1,18 @@
 #ifndef ACTION_HPP
 #define ACTION_HPP
 
-#include <sstream>
+#include <string>
 
 #include <boost/program_options.hpp>
 
-#include "exit.hpp"
-
 namespace action {
+  std::string repeat_perform(int argc, char const* const* argv);
+  std::string repeat_help_msg();
+  boost::program_options::options_description repeat_options_desc();
 
-struct Result {
-  std::stringstream m_output;
-  ExitCode m_exitCode;
-
-  Result(ExitCode const exitCode) : m_exitCode{exitCode} {}
-  Result(ExitCode const exitCode, char const *const msg)
-  : m_exitCode{exitCode} {
-    m_output << msg;
-  }
-};
-
-Result repeat(boost::program_options::variables_map const &options);
-
-Result sizerank(boost::program_options::variables_map const &options);
-
-} // namespace action
+  std::string sizerank_perform(int argc, char const* const* argv);
+  std::string sizerank_help_msg();
+  boost::program_options::options_description sizerank_options_desc();
+}
 
 #endif // ACTION_HPP

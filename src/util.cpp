@@ -1,74 +1,58 @@
-#define _CRT_SECURE_NO_WARNINGS
 #include <filesystem>
 #include <iostream>
 #include <stdexcept>
 #include <sstream>
+#include <cstdarg>
 
-#include "exit.hpp"
+#include <boost/program_options.hpp>
+
 #include "util.hpp"
 
 using namespace std;
 
-uint16_t util::byteswap_uint16(uint16_t const val) {
-  #if MICROSOFT_COMPILER
-    static_assert(sizeof(unsigned short) == sizeof(uint16_t));
-    return _byteswap_ushort(val);
-  #elif GXX_COMPILER
-    return __builtin_bswap16(val);
-  #else
-    #error "unsupported compiler"
-  #endif
+string util::make_str(char const *const fmt, ...) {
+  size_t const buf_size = 1024;
+  char buffer[buf_size];
+
+  va_list args;
+  va_start(args, fmt);
+  [[maybe_unused]] int const cnt = vsnprintf(buffer, sizeof(buffer), fmt, args);
+  va_end(args);
+
+  return std::string(buffer);
 }
 
-uint32_t util::byteswap_uint32(uint32_t const val) {
-  #if MICROSOFT_COMPILER
-    static_assert(sizeof(unsigned long) == sizeof(uint32_t));
-    return _byteswap_ulong(val);
-  #elif GXX_COMPILER
-    return __builtin_bswap32(val);
-  #else
-    #error "unsupported compiler"
-  #endif
-}
+fstream util::open_file(char const *const file_path, int const flags) {
+  bool const for_reading = (flags & 1) == 1;
 
-fstream util::open_file(char const *const pathname, int const flags) {
-  bool const forReading = (flags & 1) == 1;
-  if (forReading) {
-    if (!filesystem::exists(pathname)) {
-      cerr << "fatal: file `" << pathname << "` not found\n";
-      EXIT(ExitCode::FILE_NOT_FOUND);
-    }
-  }
+  if (for_reading && !filesystem::exists(file_path))
+    throw std::runtime_error(make_str("file '%s' not found", file_path));
 
-  fstream file(pathname, static_cast<ios_base::openmode>(flags));
+  fstream file(file_path, static_cast<ios_base::openmode>(flags));
 
-  if (!file.is_open()) {
-    cerr << "fatal: unable to open file `" << pathname << "`\n";
-    EXIT(ExitCode::FILE_OPEN_FAILED);
-  }
+  if (!file.is_open())
+    throw std::runtime_error(make_str("unable to open file '%s'", file_path));
 
-  if (!file.good()) {
-    cerr << "fatal: bad file `" << pathname << "`\n";
-    EXIT(ExitCode::BAD_FILE);
-  }
+  if (!file)
+    throw std::runtime_error(make_str("file '%s' in bad state", file_path));
 
   return file;
 }
 
-vector<char> util::extract_bin_file_contents(char const *const pathname) {
-  fstream file = util::open_file(pathname, ios::binary | ios::in);
-  auto const fileSize = filesystem::file_size(pathname);
-  vector<char> vec(fileSize);
-  file.read(vec.data(), fileSize);
+vector<char> util::extract_bin_file_contents(char const *const file_path) {
+  fstream file = util::open_file(file_path, ios::binary | ios::in);
+  auto const file_size = filesystem::file_size(file_path);
+  vector<char> vec(file_size);
+  file.read(vec.data(), file_size);
   return vec;
 }
 
-string util::extract_txt_file_contents(char const *const pathname) {
-  fstream file = util::open_file(pathname, ios::in);
-  auto const fileSize = filesystem::file_size(pathname);
+string util::extract_txt_file_contents(char const *const file_path) {
+  fstream file = util::open_file(file_path, ios::in);
+  auto const file_size = filesystem::file_size(file_path);
 
   string content{};
-  content.reserve(fileSize);
+  content.reserve(file_size);
 
   getline(file, content, '\0');
 
@@ -88,23 +72,23 @@ string util::format_file_size(uintmax_t const size) {
 }
 
 void util::format_file_size(
-  uintmax_t const size_,
+  uintmax_t const file_size,
   char *const out,
-  size_t const outSize
+  size_t const out_size
 ) {
   char const *units[] = { "B", "KB", "MB", "GB", "TB" };
-  size_t constexpr largestUnitIdx = util::lengthof(units) - 1;
-  size_t unitIdx = 0;
+  size_t constexpr largest_unit_idx = util::lengthof(units) - 1;
+  size_t unit_idx = 0;
 
-  double size = static_cast<double>(size_);
+  double size = static_cast<double>(file_size);
 
-  while (size >= 1024 && unitIdx < largestUnitIdx) {
+  while (size >= 1024 && unit_idx < largest_unit_idx) {
     size /= 1024;
-    ++unitIdx;
+    ++unit_idx;
   }
 
   char const *const fmt =
-    unitIdx == 0
+    unit_idx == 0
     // no digits after decimal point for bytes
     // because showing a fraction of a byte doesn't make sense
     ? "%.0lf %s"
@@ -112,5 +96,5 @@ void util::format_file_size(
     // greater than bytes
     : "%.2lf %s";
 
-  snprintf(out, outSize, fmt, size, units[unitIdx]);
+  snprintf(out, out_size, fmt, size, units[unit_idx]);
 }

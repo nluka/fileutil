@@ -1,125 +1,125 @@
+#include <iostream>
 #include <fstream>
 
+#include <boost/program_options.hpp>
+
 #include "action.hpp"
-#include "program-options.hpp"
-#include "test.hpp"
+#include "ntest.hpp"
 #include "util.hpp"
 
-#undef assert // due to conflict with `test` module
+namespace bpo = boost::program_options;
+using namespace std;
 
 int main(void) {
-  test::use_stdout(true);
-  test::set_indentation("  ");
-  test::set_verbose_mode(false);
+  ntest::init();
+  ntest::config::set_max_arr_preview_len(2);
+  ntest::config::set_max_str_preview_len(10);
 
-  namespace bpo = boost::program_options;
-  using namespace std;
-
+  // repeat
   {
-    SETUP_SUITE_USING(action::repeat)
-
-    auto const testCase = [&s](char const *const name_, char const *const count) {
-      string const
-        name = string("repeat/") + name_,
-        binInPathname = name + ".binin",
-        binOutPathname = name + ".binout";
-
+    {
       char const *argv[] {
         "program_name_placeholder",
         "repeat",
-        "--in", binInPathname.c_str(),
-        "--count", count,
-        "--out", binOutPathname.c_str()
       };
-
-      bpo::variables_map options;
-      bpo::store(
-        bpo::parse_command_line(
-          static_cast<int>(util::lengthof(argv)),
-          argv,
-          prgopt::options_descrip()
+      std::string const out = action::repeat_perform((int)util::lengthof(argv), argv);
+      ntest::assert_cstr(
+        (
+          "(--inpath, -i) required option missing\n"
+          "(--outpath, -o) required option missing\n"
+          "(--repeats, -n) required option missing\n"
         ),
-        options
+        out.c_str()
       );
+    }
+    {
+      char const *argv[] {
+        "program_name_placeholder",
+        "repeat",
+        "-i", "does_not_exist",
+        "-n", "0",
+        "-o", "bad_dir/out.bin",
+      };
+      std::string const out = action::repeat_perform((int)util::lengthof(argv), argv);
+      ntest::assert_cstr(
+        (
+          "(--inpath, -i) file not found\n"
+          "(--outpath, -o) file cannot be opened\n"
+          "(--repeats, -n) value must be > 0\n"
+        ),
+        out.c_str()
+      );
+    }
+    {
+      char const *argv[] {
+        "program_name_placeholder",
+        "repeat",
+        "-i", "repeat/copy.binin",
+        "-n", "1",
+        "-o", "repeat/copy.binout",
+      };
+      std::string const out = action::repeat_perform((int)util::lengthof(argv), argv);
+      ntest::assert_cstr("Successfully repeated \"repeat/copy.binin\" 1 times as \"repeat/copy.binout\"\n", out.c_str());
+      ntest::assert_binary_file("repeat/copy.expectedbinout", "repeat/copy.binout");
+    }
+    {
+      char const *argv[] {
+        "program_name_placeholder",
+        "repeat",
+        "-i", "repeat/double.binin",
+        "-n", "2",
+        "-o", "repeat/double.binout",
+      };
+      std::string const out = action::repeat_perform((int)util::lengthof(argv), argv);
+      ntest::assert_cstr("Successfully repeated \"repeat/double.binin\" 2 times as \"repeat/double.binout\"\n", out.c_str());
+      ntest::assert_binary_file("repeat/double.expectedbinout", "repeat/double.binout");
+    }
+    {
+      char const *argv[] {
+        "program_name_placeholder",
+        "repeat",
+        "-i", "repeat/triple.binin",
+        "-n", "3",
+        "-o", "repeat/triple.binout",
+      };
+      std::string const out = action::repeat_perform((int)util::lengthof(argv), argv);
+      ntest::assert_cstr("Successfully repeated \"repeat/triple.binin\" 3 times as \"repeat/triple.binout\"\n", out.c_str());
+      ntest::assert_binary_file("repeat/triple.expectedbinout", "repeat/triple.binout");
+    }
+    {
+      char const *argv[] {
+        "program_name_placeholder",
+        "repeat",
+        "-i", "repeat/quad.binin",
+        "-n", "4",
+        "-o", "repeat/quad.binout",
+      };
+      std::string const out = action::repeat_perform((int)util::lengthof(argv), argv);
+      ntest::assert_cstr("Successfully repeated \"repeat/quad.binin\" 4 times as \"repeat/quad.binout\"\n", out.c_str());
+      ntest::assert_binary_file("repeat/quad.expectedbinout", "repeat/quad.binout");
+    }
+  }
 
-      action::Result const result = action::repeat(options);
-
-      vector<char> binIn = util::extract_bin_file_contents(
-        binInPathname.c_str()
-      );
-      vector<char> const binOut = util::extract_bin_file_contents(
-        binOutPathname.c_str()
-      );
-      vector<char> const expectedBinOut = util::extract_bin_file_contents(
-        (name + ".expectedbinout").c_str()
-      );
-      string const txtOut = result.m_output.str();
-      string const expectedTxtOut = util::extract_txt_file_contents(
-        (name + ".expectedtxtout").c_str()
-      );
-
-      s.assert(
-        (string(name_) + " binouts match").c_str(),
-        util::vectors_same(binOut, expectedBinOut)
-      );
-      s.assert(
-        (string(name_) + " txtouts match").c_str(),
-        txtOut.length() == expectedTxtOut.size() &&
-        memcmp(txtOut.data(), expectedTxtOut.data(), txtOut.size()) == 0
-      );
-    };
-
-    testCase("copy", "1");
-    testCase("double", "2");
-    testCase("triple", "3");
-    testCase("quad", "4");
-
-  } // repeat
-
+  // sizerank
   {
-    SETUP_SUITE_USING(action::sizerank);
-
-    auto const testCase = [&s](
-      string const name,
-      size_t const argc,
-      char const *const *const argv,
-      char const *const expected
-    ) {
-      bpo::variables_map options;
-      bpo::store(
-        bpo::parse_command_line(
-          static_cast<int>(argc),
-          argv,
-          prgopt::options_descrip()
-        ),
-        options
-      );
-
-      action::Result const res = sizerank(options);
-      string const out = res.m_output.str();
-
-      s.assert(name.c_str(), out == expected);
-    };
-
     {
       char const *argv[] {
         "program_name_placeholder",
         "sizerank",
-        "--dir", "sizerank",
+        "--dir", "does_not_exist",
+        "--sizelim", "3,2",
+        "--pattern", "*",
+        "--outpath", "bad_dir/out.txt",
       };
-      testCase(
-        "defaults",
-        util::lengthof(argv), argv,
-        "1. (13 B) 13byte\n"
-        "2. (12 B) _12byte\n"
-        "3. (11 B) __11byte\n"
-        "4. (10 B) _10byte\n"
-        "5. (9 B) __9byte\n"
-        "6. (8 B) _8byte\n"
-        "7. (7 B) _7byte\n"
-        "8. (6 B) _6byte\n"
-        "9. (5 B) __5byte\n"
-        "10. (4 B) __4byte\n"
+      std::string const out = action::sizerank_perform((int)util::lengthof(argv), argv);
+      ntest::assert_cstr(
+        (
+          "(--pattern, -p) is not a invalid regular expression\n"
+          "(--dir, -d) is not a directory\n"
+          "(--outpath, -o) cannot be opened\n"
+          "(--sizelim, -s) max(rhs) must be >= min(lhs)\n"
+        ),
+        out.c_str()
       );
     }
     {
@@ -127,54 +127,63 @@ int main(void) {
         "program_name_placeholder",
         "sizerank",
         "--dir", "sizerank",
-        "--recursive",
+      };
+      std::string const out = action::sizerank_perform((int)util::lengthof(argv), argv);
+      ntest::assert_cstr(
+        (
+          "1. (13 B) 13byte\n"
+          "2. (12 B) _12byte\n"
+          "3. (11 B) __11byte\n"
+          "4. (10 B) _10byte\n"
+          "5. (9 B) __9byte\n"
+          "6. (8 B) _8byte\n"
+          "7. (7 B) _7byte\n"
+          "8. (6 B) _6byte\n"
+          "9. (5 B) __5byte\n"
+          "10. (4 B) __4byte\n"
+        ),
+        out.c_str()
+      );
+    }
+    {
+      char const *argv[] {
+        "program_name_placeholder",
+        "sizerank",
+        "--dir", "sizerank",
+        "--recurse",
         "--top", "4",
-        "--minsize", "3",
-        "--maxsize", "7",
+        "--sizelim", "3,7",
         "--pattern", "_[0-9]+byte",
       };
-      testCase(
-        "top 5, [3, 7] bytes, starts with single underscore",
-        util::lengthof(argv), argv,
-        "1. (7 B) _7byte\n"
-        "2. (6 B) _6byte\n"
-        "3. (4 B) subdir\\_4byte\n"
-        "4. (3 B) _3byte\n"
+      std::string const out = action::sizerank_perform((int)util::lengthof(argv), argv);
+      ntest::assert_cstr(
+        (
+          "1. (7 B) _7byte\n"
+          "2. (6 B) _6byte\n"
+          "3. (4 B) subdir\\_4byte\n"
+          "4. (3 B) _3byte\n"
+        ),
+        out.c_str()
       );
     }
-
   } // sizerank
 
   {
-    SETUP_SUITE_USING(util::format_file_size)
+    using util::format_file_size;
 
-    auto const testCase = [&s](
-      uintmax_t const size,
-      char const *const expected
-    ) {
-      string const result = format_file_size(size);
-      stringstream name{};
-      name << size << " == " << expected << " (got " << result << ")";
-      s.assert(name.str().c_str(), result == expected);
-    };
-
-    testCase(0, "0 B");
-
-    testCase(1023, "1023 B");
-    testCase(1024, "1.00 KB");
-    testCase(2048, "2.00 KB");
-
-    testCase(1'048'575, "1024.00 KB");
-    testCase(1'048'576, "1.00 MB");
-
-    testCase(1'073'741'823, "1024.00 MB");
-    testCase(1'073'741'824, "1.00 GB");
-
-    testCase(1'099'511'627'775, "1024.00 GB");
-    testCase(1'099'511'627'776, "1.00 TB");
+    ntest::assert_stdstr("0 B", format_file_size(0));
+    ntest::assert_stdstr("1023 B", format_file_size(1023));
+    ntest::assert_stdstr("1.00 KB", format_file_size(1024));
+    ntest::assert_stdstr("2.00 KB", format_file_size(2048));
+    ntest::assert_stdstr("1024.00 KB", format_file_size(1'048'575));
+    ntest::assert_stdstr("1.00 MB", format_file_size(1'048'576));
+    ntest::assert_stdstr("1024.00 MB", format_file_size(1'073'741'823));
+    ntest::assert_stdstr("1.00 GB", format_file_size(1'073'741'824));
+    ntest::assert_stdstr("1024.00 GB", format_file_size(1'099'511'627'775));
+    ntest::assert_stdstr("1.00 TB", format_file_size(1'099'511'627'776));
   }
 
-  test::evaluate_suites();
-
-  return 0;
+  auto const res = ntest::generate_report("fileutil");
+  std::cout << res.num_passes << " passed, " << res.num_fails << " failed";
+  return static_cast<int>(res.num_fails);
 }
