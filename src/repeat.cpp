@@ -25,11 +25,7 @@ bpo::options_description action::repeat_options_desc() {
 
 std::string action::repeat_help_msg() {
   std::stringstream out{};
-
-  out << '\n';
   repeat_options_desc().print(out, 6);
-  out << '\n';
-
   return out.str();
 }
 

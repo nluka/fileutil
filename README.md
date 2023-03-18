@@ -1,34 +1,47 @@
 # fileutil
 
+```
+usage:
+  fileutil repeat|sizerank help
+  fileutil repeat|sizerank [options...]
+```
+
 ## functions
-- [x] [repeat](#repeat): repeat the contents of a file
-- [x] [sizerank](#sizerank): rank files by size
-- [ ] regex searching
-- [ ] generate a binary file with a pattern
+- [repeat](#repeat): repeat the contents of a file
+- [sizerank](#sizerank): rank files by size
 
 ## repeat
 
-duplicates a file's content N times, writing it as a new file.
+Repeats a file's content N times, writing it as a new file.
 
-| option | type | description |
-| - | - | - |
-| --in * | pathname | pathname of file to repeat |
-| --count * | unsigned int, > 0 | number to times to duplicate content (1 = make copy) |
-| --out * | pathname | pathname of resultant file |
-
-\* = required
+```
+REPEAT OPTIONS:
+  -i [ --inpath ] arg
+      Path of file to repeat
+  -o [ --outpath ] arg
+      Path of resultant file
+  -n [ --repeats ] arg
+      Number of times to duplicate content, 1 = copy
+```
 
 ## sizerank
 
-ranks top N largest files in directory/subdirectories.
+Ranks top N largest files in directory/subdirectories.
 
-| option | type | default | description |
-| - | - | - | - |
-| --dir | path | cwd | directory to search |
-| --recursive | flag | off | enables recusive iteration through all subdirectories |
-| --top | unsigned int, > 0 | 10 | how many top entries to rank |
-| --minsize | unsigned int | 0 | smallest file size (in bytes) to consider |
-| --maxsize | unsigned int | infinity | largest file size (in bytes) to consider |
-| --pattern | regular expression | .* | regular expression to test files against |
-| --followdirsymlinks | flag | off | enables following directory symlinks |
-| --out | pathname | none | pathname of file to save output to |
+```
+SIZERANK OPTIONS:
+  -d [ --dir ] arg
+      Search directory, default=cwd
+  -r [ --recurse ]
+      Enables recursive search through child directories, default=false
+  -n [ --top ] arg
+      Number of top entries to rank, default=10
+  -s [ --sizelim ] arg
+      File size limits to consider, inclusive, format: min,max
+  -p [ --pattern ] arg
+      Regular expression to match file names against, default=.*
+  -l [ --followsymlinks ]
+      Enables following symbolic links, default=false
+  -o [ --outpath ] arg
+      Path of output file, default=none
+```

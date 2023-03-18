@@ -29,11 +29,7 @@ bpo::options_description action::sizerank_options_desc() {
 
 std::string action::sizerank_help_msg() {
   std::stringstream out{};
-
-  out << '\n';
   sizerank_options_desc().print(out, 6);
-  out << '\n';
-
   return out.str();
 }
 
